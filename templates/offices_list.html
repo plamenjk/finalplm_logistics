@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}  {# наследява основния шаблон layout.html #}
+{% block content %}  {# начало на съдържателния блок #}
+
+<div class="d-flex justify-content-between align-items-center mb-3">  {# контейнер за заглавието и бутона #}
+  <h3>Офиси</h3>  {# заглавие на страницата #}
+  {% if user.role in ['employee','admin'] %}  {# показва бутона само за служители и администратори #}
+  <a class="btn btn-primary glow" href="{{ url_for('offices_new') }}">  {# бутон за добавяне на нов офис #}
+    <i class="bi bi-plus-lg"></i> Нов офис
+  </a>
+  {% endif %}
+</div>
+
+<div class="table-responsive">  {# таблицата е адаптивна за различни екрани #}
+  <table class="table table-striped table-sm">  {# таблица с редуващи се цветове и малки редове #}
+    <thead>
+      <tr>
+        <th>#</th><th>Име</th><th>Град</th><th>Адрес</th><th>Lat</th><th>Lon</th><th></th>  {# заглавен ред на колоните #}
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in offices %}  {# цикъл през всички офиси #}
+      <tr>
+        <td>{{ o.id }}</td>  {# ID на офиса #}
+        <td>{{ o.name }}</td>  {# име на офиса #}
+        <td>{{ o.city }}</td>  {# град на офиса #}
+        <td>{{ o.address }}</td>  {# адрес на офиса #}
+        <td>{{ o.lat or '—' }}</td>  {# географска ширина или тире #}
+        <td>{{ o.lon or '—' }}</td>  {# географска дължина или тире #}
+        <td>  {# колона за бутони за действия #}
+          {% if user.role in ['employee','admin'] %}  {# действия достъпни само за служители/админ #}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('offices_edit', office_id=o.id) }}">  {# бутон за редакция #}
+            <i class="bi bi-pencil-square"></i>
+          </a>
+          <a class="btn btn-sm btn-outline-danger" href="{{ url_for('offices_delete', office_id=o.id) }}" onclick="return confirm('Изтриване?')">  {# бутон за изтриване с потвърждение #}
+            <i class="bi bi-trash"></i>
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}  {# край на цикъла #}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}  {# край на съдържателния блок #}

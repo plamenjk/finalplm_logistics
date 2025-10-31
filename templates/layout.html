@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <!-- декларация за HTML5 документ -->
+    <!-- език на страницата - български -->
+    <meta charset="utf-8">  {# задава UTF-8 кодировка #}
+    <!-- задава UTF-8 кодировка -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">  {# адаптивен изглед за мобилни устройства #}
+    <!-- адаптивен изглед за мобилни устройства -->
+    <title>{{ title or app_name }}</title>  {# заглавие на страницата (динамично) #}
+    <!-- заглавие на страницата (динамично) -->
+
+    {# основна Bootstrap тема от Bootswatch #}
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css" rel="stylesheet">
+
+    {# икони на Bootstrap #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    {# шрифтове от Google Fonts #}
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    {# потребителски CSS стилове #}
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+  </head>
+
+  <body class="neo-bg">  {# основен фон на приложението #}
+    <nav class="navbar navbar-expand-lg navbar-dark neo-nav">  {# навигационна лента #}
+      <div class="container-fluid">
+        <a class="navbar-brand logo" href="{{ url_for('dashboard') }}">  {# логото води към таблото #}
+          <i class="bi bi-truck-front-fill me-1"></i><span class="brand-text">PLM Logistics</span>
+        </a>
+
+        {# бутон за мобилно меню #}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" title="Toggle navigation" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="nav">  {# съдържанието на менюто #}
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">  {# основни навигационни връзки #}
+            {% if user %}  {# показва се само при влязъл потребител #}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('shipments_list') }}"><i class="bi bi-box-seam"></i> Пратки</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('offices_list') }}"><i class="bi bi-building"></i> Офиси</a></li>
+              {% if user.role in ['employee','admin'] %}  {# достъпно само за служители и администратори #}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('clients_list') }}"><i class="bi bi-people"></i> Клиенти</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('company_form') }}"><i class="bi bi-gear"></i> Компания</a></li>
+              {% endif %}
+              {% if user.role == 'admin' %}  {# само за администратори #}
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('employees_list') }}"><i class="bi bi-person-badge"></i> Служители</a></li>
+              {% endif %}
+            {% endif %}
+          </ul>
+
+          <ul class="navbar-nav me-2">  {# бутон за нова пратка (служители/админ) #}
+            {% if user and user.role in ['employee','admin'] %}
+            <li class="nav-item me-2"><a class="btn btn-sm btn-success" href="{{ url_for('shipments_new') }}"><i class="bi bi-plus-lg"></i> Нова пратка</a></li>
+            {% endif %}
+          </ul>
+
+          <ul class="navbar-nav me-2">  {# бутон за превключване на тема (светъл/тъмен) #}
+            <li class="nav-item">
+              <button id="themeToggle" class="btn btn-sm btn-outline-light" type="button"><i class="bi bi-sun"></i> Светъл изглед</button>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">  {# потребителски профил и вход/изход #}
+            {% if user %}
+              <li class="nav-item"><span class="navbar-text me-2">{{ user.email }} ({{ user.role }})</span></li>  {# показва имейл и роля #}
+              <li class="nav-item"><a class="btn btn-sm btn-outline-light" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Изход</a></li>
+            {% else %}
+              <li class="nav-item"><a class="btn btn-sm btn-outline-light" href="{{ url_for('login') }}"><i class="bi bi-box-arrow-in-right"></i> Вход</a></li>
+              <li class="nav-item ms-2"><a class="btn btn-sm btn-warning" href="{{ url_for('register_client') }}"><i class="bi bi-person-plus"></i> Регистрация (клиент)</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4 reveal">  {# основна част на страницата #}
+      {% with messages = get_flashed_messages() %}  {# показва съобщения (ако има) #}
+        {% if messages %}<div class="alert alert-info">{{ messages|join(', ') }}</div>{% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}  {# съдържание на отделните страници #}
+
+      <footer class="mt-5 py-4 text-center text-muted">  {# футър с авторско право #}
+        <span>© 2025 {{ app_name }}</span>
+      </footer>
+    </main>
+
+    {# Bootstrap JS пакет #}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Анимация за плавно показване при скрол (Intersection Observer)
+  (function(){
+    const els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(e=>e.classList.add('is-visible')); return; }
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(en=>{ 
+        if (en.isIntersecting){ 
+          en.target.classList.add('is-visible'); 
+          io.unobserve(en.target);
+        }
+      });
+    }, {threshold:.1});
+    els.forEach(e=>io.observe(e));
+  })();
+</script>
+
+<script>
+  // Превключване между светъл и тъмен режим
+  (function(){
+    const KEY='plm_theme';  // ключ за локално съхранение
+    const btn = document.getElementById('themeToggle');  // бутон за превключване
+    function applyTheme(t){  // прилагане на темата
+      document.documentElement.classList.toggle('theme-light', t==='light');
+      if(btn){
+        btn.innerHTML = t==='light' 
+          ? '<i class="bi bi-moon"></i> Тъмен изглед' 
+          : '<i class="bi bi-sun"></i> Светъл изглед'; 
+        btn.classList.toggle('btn-outline-dark', t==='light');
+        btn.classList.toggle('btn-outline-light', t!=='light');
+      }
+    }
+    let theme = localStorage.getItem(KEY) || 'dark';  // по подразбиране тъмен режим
+    applyTheme(theme);  // прилагане при зареждане
+    btn && btn.addEventListener('click', ()=>{  // при натискане на бутона
+      theme = (theme==='light')?'dark':'light';
+      localStorage.setItem(KEY, theme);  // запазва се избора
+      applyTheme(theme);  // актуализира се визуално
+    });
+  })();
+</script>
+
+</body>
+</html>

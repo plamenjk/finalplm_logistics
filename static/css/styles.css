@@ -1,0 +1,275 @@
+
+:root{
+  --neo-bg1:#0a0f1f;
+  --neo-bg2:#0f1b33;
+  --neo-accent:#00e0ff;
+  --neo-accent-2:#7a5cff;
+  --neo-hot:#ff3cac;
+  --neo-text:#e6f1ff;
+  --neo-muted:#8aa0c6;
+  --radius:16px;
+  --shadow:0 10px 25px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.2);
+}
+*{box-sizing:border-box}
+body{font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--neo-text)}
+.neo-bg{
+  min-height:100vh;
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(122,92,255,.25), transparent 60%),
+              radial-gradient(1000px 500px at 100% 10%, rgba(0,224,255,.2), transparent 60%),
+              linear-gradient(180deg, var(--neo-bg1), var(--neo-bg2));
+  background-attachment: fixed;
+}
+/* Animated gradient navbar */
+.neo-nav{
+  background: linear-gradient(90deg, #0b1226, #101e3a);
+  position: sticky; top:0; z-index: 1030;
+  box-shadow: var(--shadow);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.neo-nav:before{
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(90deg, var(--neo-hot), var(--neo-accent), var(--neo-accent-2), var(--neo-hot));
+  opacity:.25; mix-blend-mode: screen; filter: blur(24px);
+  background-size: 300% 100%; animation: flow 14s linear infinite;
+  pointer-events: none;
+}
+@keyframes flow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+
+/* Brand */
+.logo{font-family:'Orbitron', monospace; letter-spacing:1px; font-weight:800; position:relative}
+.brand-text{
+  background: linear-gradient(90deg, #00e0ff, #7a5cff, #ff3cac);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 6px rgba(122,92,255,.6));
+}
+
+/* Cards, tables, buttons */
+.card{
+  border-radius: var(--radius);
+  background: rgba(13,20,39,.65);
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: rise .5s ease both;
+}
+@keyframes rise{from{opacity:0; transform: translateY(8px)} to{opacity:1; transform:none}}
+.table{color:var(--neo-text)}
+.table thead th{border-color:rgba(255,255,255,.1); color:#bcd2ff; font-weight:600}
+.table tbody tr{transition:.2s}
+.table tbody tr:hover{background: rgba(122,92,255,.08)}
+
+.btn{
+  border-radius: 12px;
+  border:1px solid transparent;
+  transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn:active{transform: translateY(1px) scale(.98)}
+.btn-primary{
+  background: linear-gradient(135deg, var(--neo-accent), var(--neo-accent-2));
+  border: none;
+  box-shadow: 0 8px 20px rgba(0,224,255,.25);
+}
+.btn-success{
+  background: linear-gradient(135deg, #00d18f, #24e1ff);
+  border:none; box-shadow: 0 8px 20px rgba(36,225,255,.25);
+}
+.btn-outline-light{border-color: rgba(255,255,255,.5)}
+
+.form-control,.form-select{
+  background: rgba(11,18,38,.7);
+  color: var(--neo-text);
+  border-radius: 12px;
+  border:1px solid rgba(255,255,255,.12);
+}
+.form-control:focus,.form-select:focus{border-color: var(--neo-accent); box-shadow: 0 0 0 0.2rem rgba(0,224,255,.15)}
+
+/* Footer */
+footer{color:var(--neo-muted)}
+
+/* Leaflet map styling frame */
+#map, #officeMap{
+  border-radius: 14px; overflow: hidden;
+  box-shadow: var(--shadow);
+  border:1px solid rgba(255,255,255,.06);
+}
+
+/* Reveal on scroll */
+.reveal{opacity:0; transform: translateY(10px); transition: .6s ease}
+.reveal.is-visible{opacity:1; transform:none}
+
+.autocomplete-list{position:absolute;z-index:1000;background:#0c1328;border:1px solid rgba(255,255,255,.08);border-radius:.75rem;box-shadow:0 14px 34px rgba(0,0,0,.35);max-height:240px;overflow:auto}
+.autocomplete-item{padding:.6rem .8rem;cursor:pointer;color:var(--neo-text)}
+.autocomplete-item:hover{background:rgba(122,92,255,.15)}
+
+/* badges and labels */
+.badge{border-radius: 10px}
+
+/* tiny glow utility */
+.glow{box-shadow: 0 0 0 0 rgba(122,92,255,.9); animation: pulseGlow 2s ease-out infinite}
+@keyframes pulseGlow{50%{box-shadow: 0 0 30px 6px rgba(122,92,255,.25)}}
+
+/* Navbar links */
+.navbar .nav-link{color:#cfe4ff}
+.navbar .nav-link:hover{color:#ffffff}
+.navbar .btn-outline-light{border-color: rgba(255,255,255,.5)}
+
+/* Headings */
+h1,h2,h3,h4,h5,h6{font-family:'Orbitron', monospace; letter-spacing:.5px}
+
+/* Misc */
+hr{border-color:rgba(255,255,255,.08)}
+
+
+/* --- Higher contrast tweaks --- */
+:root{ --neo-text:#f2f6ff; --neo-muted:#b8c7e8 }
+.form-label{color:var(--neo-text)}
+.table{color:var(--neo-text)}
+.navbar .navbar-brand, .navbar .navbar-text{color:#ffffff}
+a{color:#7ad6ff}
+a:hover{color:#c7e7ff}
+
+/* Light theme */
+.theme-light body.neo-bg{
+  background: linear-gradient(180deg, #f7fbff, #eef4ff);
+}
+.theme-light .neo-nav{
+  background: linear-gradient(90deg, #ffffff, #f1f5ff);
+  border-bottom:1px solid #e5edff;
+}
+.theme-light .neo-nav:before{display:none}
+.theme-light .navbar .nav-link{color:#2b3a55}
+.theme-light .navbar .nav-link:hover{color:#111c2e}
+.theme-light .logo .brand-text{filter:none}
+.theme-light .card{
+  background:#ffffff; border:1px solid #e8eefc; color:#1b2742;
+}
+.theme-light .table{color:#1b2742}
+.theme-light .form-control,.theme-light .form-select{
+  background:#fff; color:#1b2742; border:1px solid #d6e0fb;
+}
+.theme-light footer{color:#64769a}
+.theme-light .btn-primary{box-shadow:none}
+.theme-light .autocomplete-list{background:#fff; border-color:#e5e9f7}
+
+/* Placeholder contrast */
+::placeholder{ color: #9fb3d7; opacity: 1; }
+.theme-light ::placeholder{ color:#7383a8; }
+
+
+/* Stronger contrast for detail view */
+.detail p { color: var(--neo-text); margin-bottom: .35rem; }
+.detail p strong { color: #ffffff; }
+.theme-light .detail p { color: #0f1b33; }
+.theme-light .detail p strong { color: #0a0f1f; }
+
+/* ===== Accessibility & contrast fix for disabled/readonly controls (DARK) ===== */
+.form-control:disabled,
+.form-control[readonly],
+.form-select:disabled {
+  background: rgba(255,255,255,0.08) !important;   /* малко по-светъл фон върху тъмната тема */
+  color: var(--neo-text) !important;               /* реалният текст */
+  -webkit-text-fill-color: var(--neo-text) !important; /* Safari пренаписва color => фиксираме */
+  border-color: rgba(255,255,255,0.18) !important;
+  opacity: 1 !important;                           /* Bootstrap често слага прозрачност */
+  cursor: not-allowed;
+}
+
+.form-control:disabled::placeholder,
+.form-control[readonly]::placeholder {
+  color: var(--neo-muted) !important;              /* четим placeholder върху тъмен фон */
+  opacity: 1 !important;
+}
+
+/* Стрелката на select (WebKit) да е видима върху тъмен фон */
+.form-select:disabled {
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,.7) 50%, transparent 50%),
+    linear-gradient(135deg, transparent 50%, rgba(255,255,255,.7) 50%),
+    linear-gradient(to right, rgba(255,255,255,.25), rgba(255,255,255,.25)) !important;
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 15px) 50%,
+    calc(100% - 2.2rem) 50% !important;
+  background-size: 5px 5px, 5px 5px, 1px 60% !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Labels и малки помощни текстове да останат четими до disabled полета */
+.form-label,
+.form-text { color: var(--neo-text) !important; }
+
+/* ===== Light theme variants ===== */
+.theme-light .form-control:disabled,
+.theme-light .form-control[readonly],
+.theme-light .form-select:disabled {
+  background: #f4f7ff !important;
+  color: #1b2742 !important;
+  -webkit-text-fill-color: #1b2742 !important;
+  border-color: #d6e0fb !important;
+  opacity: 1 !important;
+}
+
+.theme-light .form-control:disabled::placeholder,
+.theme-light .form-control[readonly]::placeholder {
+  color: #7383a8 !important;
+  opacity: 1 !important;
+}
+
+.theme-light .form-select:disabled {
+  background-image:
+    linear-gradient(45deg, rgba(27,39,66,.7) 50%, transparent 50%),
+    linear-gradient(135deg, transparent 50%, rgba(27,39,66,.7) 50%),
+    linear-gradient(to right, rgba(27,39,66,.2), rgba(27,39,66,.2)) !important;
+}
+
+/* По-видима неактивна икона/помощен текст */
+.text-muted { color: var(--neo-muted) !important; }
+
+
+
+/* Адрес полета (активни) – по-ярък фон и по-контрастен текст */
+#pickup_address_input.form-control:not(:disabled),
+#delivery_address_input.form-control:not(:disabled) {
+  background: rgba(18, 26, 48, 0.92);
+  color: var(--neo-text);
+  border-color: rgba(255,255,255,0.22);
+}
+#pickup_address_input:focus,
+#delivery_address_input:focus {
+  border-color: var(--neo-accent);
+  box-shadow: 0 0 0 0.2rem rgba(0,224,255,.15);
+}
+.theme-light #pickup_address_input.form-control:not(:disabled),
+.theme-light #delivery_address_input.form-control:not(:disabled) {
+  background: #ffffff;
+  color: #0b1226;
+  border-color: #cfd9f5;
+}
+
+/* Подсказки: винаги над всичко и четими */
+.autocomplete-list{
+  z-index: 3000; /* над Leaflet и над карти */
+  color: var(--neo-text);
+}
+.theme-light .autocomplete-list{ color:#0b1226 }
+
+/* Етикети до превключватели – винаги четими */
+.form-check-label { color: var(--neo-text) !important; }
+.theme-light .form-check-label { color: #0b1226 !important; }
+
+/* Маркер, че дистанцията е автопопълнена (визуален намек) */
+#distance_km[data-autofilled="1"]{
+  box-shadow: 0 0 0 0.2rem rgba(122,92,255,.18);
+  border-color: rgba(122,92,255,.55);
+}
+.theme-light #distance_km[data-autofilled="1"]{
+  box-shadow: 0 0 0 0.2rem rgba(122,92,255,.18);
+  border-color: #b9c3f0;
+}
+
+/* Placeholder-и – по-контрастни в двата режима */
+#pickup_address_input::placeholder,
+#delivery_address_input::placeholder { color: var(--neo-muted) }
+.theme-light #pickup_address_input::placeholder,
+.theme-light #delivery_address_input::placeholder { color:#7383a8 }

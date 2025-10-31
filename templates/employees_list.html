@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}  {# наследява основния шаблон layout.html #}
+{% block content %}  {# начало на съдържателния блок #}
+
+<div class="d-flex justify-content-between align-items-center mb-3">  {# заглавие и бутон в един ред #}
+  <h3>Служители</h3>  {# заглавие на страницата #}
+  <a class="btn btn-primary glow" href="{{ url_for('employees_new') }}">  {# бутон за добавяне на нов служител #}
+    <i class="bi bi-plus-lg"></i> Нов служител
+  </a>
+</div>
+
+<div class="card"><div class="card-body">  {# контейнер-карта за таблицата #}
+  <div class="table-responsive">  {# таблицата е адаптивна за мобилни устройства #}
+    <table class="table table-sm table-striped align-middle">  {# таблица с редуващи се цветове и центриран текст #}
+      <thead>
+        <tr>
+          <th>#</th><th>Име</th><th>Имейл</th><th>Роля</th><th>Офис</th><th>Телефон</th><th></th>  {# заглавен ред #}
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in emps %}  {# цикъл през всички служители #}
+        <tr>
+          <td>{{ e.id }}</td>  {# ID на служителя #}
+          <td>{{ e.first_name }} {{ e.last_name }}</td>  {# име и фамилия #}
+          <td>{{ e.email }}</td>  {# имейл адрес #}
+          <td><span class="badge bg-info">{{ e.role }}</span></td>  {# роля, показана като цветен бадж #}
+          <td>{{ e.office_name or '—' }}{% if e.city %} — {{ e.city }}{% endif %}</td>  {# офис и град (ако има) #}
+          <td>{{ e.phone or '—' }}</td>  {# телефон или тире, ако няма #}
+          <td class="text-nowrap">  {# бутоните се подреждат на един ред #}
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employees_edit', emp_id=e.id) }}">  {# бутон за редакция #}
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <a class="btn btn-sm btn-outline-danger" href="{{ url_for('employees_delete', emp_id=e.id) }}" onclick="return confirm('Изтриване?')">  {# бутон за изтриване с потвърждение #}
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}  {# край на цикъла #}
+      </tbody>
+    </table>
+  </div>
+</div></div>
+
+{% endblock %}  {# край на съдържателния блок #}

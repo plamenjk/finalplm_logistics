@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}  {# наследява основния шаблон layout.html #}
+{% block content %}  {# начало на съдържателния блок #}
+
+<div class="d-flex justify-content-between align-items-center mb-3">  {# контейнер за заглавие и бутон #}
+  <h3>Клиенти</h3>  {# заглавие на страницата #}
+  <a class="btn btn-primary" href="{{ url_for('clients_new') }}">  {# бутон за добавяне на нов клиент #}
+    <i class="bi bi-plus-lg"></i> Нов клиент  {# икона и текст на бутона #}
+  </a>
+</div>
+
+<div class="table-responsive">  {# таблицата се адаптира към различни екрани #}
+  <table class="table table-striped table-sm">  {# таблица с редуващи се цветове и малки редове #}
+    <thead>
+      <tr><th>#</th><th>Име</th><th>Имейл</th><th>Телефон</th><th></th></tr>  {# заглавен ред на таблицата #}
+    </thead>
+    <tbody>
+      {% for c in clients %}  {# цикъл за всички клиенти #}
+      <tr>
+        <td>{{ c.id }}</td>  {# ID на клиента #}
+        <td>{{ c.first_name }} {{ c.last_name }}</td>  {# име и фамилия #}
+        <td>{{ c.email }}</td>  {# имейл адрес #}
+        <td>{{ c.phone }}</td>  {# телефонен номер #}
+        <td>  {# колона с бутони за действия #}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('clients_edit', client_id=c.id) }}">  {# бутон за редакция #}
+            <i class="bi bi-pencil-square"></i>  {# икона за редакция #}
+          </a>
+          <a class="btn btn-sm btn-outline-danger" href="{{ url_for('clients_delete', client_id=c.id) }}" onclick="return confirm('Изтриване?')">  {# бутон за изтриване с потвърждение #}
+            <i class="bi bi-trash"></i>  {# икона за кошче #}
+          </a>
+        </td>
+      </tr>
+      {% endfor %}  {# край на цикъла #}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}  {# край на съдържателния блок #}

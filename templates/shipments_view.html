@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}  {# използва базовия шаблон #}
+{% block content %}  {# начало на съдържанието #}
+<div class="d-flex justify-content-between align-items-center mb-3">  {# заглавие + бутони #}
+  <h3>Пратка #{{ s.id }}</h3>  {# показва ID на пратката #}
+  <div class="btn-group">  {# група за действия #}
+    {% if user.role in ['employee','admin'] and s.status != 'delivered' %}  {# бутон за маркиране доставена #}
+      <a class="btn btn-sm btn-success" href="{{ url_for('shipments_mark_delivered', shipment_id=s.id) }}">
+        <i class="bi bi-check2-circle"></i> Маркирай доставена
+      </a>
+    {% endif %}
+    {% if user.role in ['employee','admin'] %}  {# бутон за изтриване (само служ./админ) #}
+      <a class="btn btn-sm btn-outline-danger"
+         href="{{ url_for('shipments_delete', shipment_id=s.id) }}"
+         onclick="return confirm('Сигурни ли сте, че искате да изтриете пратката?')">
+        <i class="bi bi-trash"></i> Изтрий
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card"><div class="card-body">  {# карта с подробности #}
+ <div class="row detail">  {# две колони с данни #}
+    <div class="col-md-6">  {# лява колона: участници и логистика #}
+      <p><strong>Подател:</strong> {{ s.sender_name }}</p>  {# име подател #}
+      <p><strong>Получател:</strong> {{ s.recipient_name }}</p>  {# име получател #}
+      <p><strong>Размер:</strong> {{ s.size }}</p>  {# S/M/L #}
+      <p><strong>Тегло:</strong> {{ '%.2f'|format(s.weight_kg) }} кг</p>  {# тегло кг с 2 знака #}
+      <p><strong>Разстояние:</strong> {{ '%.1f'|format(s.distance_km or 0) }} км</p>  {# км с 1 знак #}
+      <p><strong>Тип:</strong> {{ 'до офис' if s.to_office else 'до адрес' }}</p>  {# тип доставка #}
+      <p><strong>Офис произход:</strong> {{ s.origin_office_name or '—' }}</p>  {# офис на тръгване #}
+      <p><strong>Място на взимане (адрес):</strong> {{ s.pickup_address or '—' }}</p>  {# адрес на взимане #}
+      <p><strong>Офис дестинация:</strong> {{ s.dest_office_name or '—' }}</p>  {# офис на пристигане #}
+      <p><strong>Адрес:</strong> {{ s.delivery_address or '—' }}</p>  {# адрес за доставка #}
+      <p><strong>Връщане до офис при неуспех:</strong> {{ 'Да' if s.return_to_office else 'Не' }}{% if s.return_to_office %} → {{ s.return_office_name or '—' }}{% endif %}</p>  {# политика за връщане #}
+    </div>
+    <div class="col-md-6">  {# дясна колона: цена и статуси #}
+      <p><strong>Цена:</strong> {{ '%.2f'|format(s.price) }} лв</p>  {# крайна цена #}
+      <p><strong>Статус:</strong> {{ s.status }}</p>  {# текущ статус #}
+      <p><strong>Регистрирана на:</strong> {{ s.registered_at }}</p>  {# дата/час създаване #}
+      <p><strong>Доставена на:</strong> {{ s.delivered_at or '—' }}</p>  {# дата/час доставка #}
+    </div>
+  </div>
+</div></div>
+{% endblock %}  {# край на съдържанието #}

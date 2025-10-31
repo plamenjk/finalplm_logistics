@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}  {# наследява основния шаблон layout.html #}
+{% block content %}  {# начало на съдържателния блок #}
+
+<h3>{{ 'Редакция на служител' if emp else 'Нов служител' }}</h3>  {# динамично заглавие според това дали служителят съществува #}
+
+<form method="post" class="card p-3">  {# форма за въвеждане/редакция на данни за служител #}
+
+  <div class="row g-3">  {# първи ред с основни полета #}
+    <div class="col-md-4">  {# колона за име #}
+      <label class="form-label">Име</label>
+      <input name="first_name" class="form-control" value="{{ emp.first_name if emp }}" required>  {# попълва име при редакция #}
+    </div>
+    <div class="col-md-4">  {# колона за фамилия #}
+      <label class="form-label">Фамилия</label>
+      <input name="last_name" class="form-control" value="{{ emp.last_name if emp }}" required>
+    </div>
+    <div class="col-md-4">  {# колона за телефон #}
+      <label class="form-label">Телефон</label>
+      <input name="phone" class="form-control" value="{{ emp.phone if emp }}">
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">  {# втори ред с имейл, роля и офис #}
+    <div class="col-md-6">  {# колона за имейл адрес #}
+      <label class="form-label">Имейл</label>
+      <input name="email" type="email" class="form-control" value="{{ emp.email if emp }}" {% if emp %}readonly{% endif %} required>  {# имейлът е readonly при редакция #}
+    </div>
+
+    <div class="col-md-3">  {# избор на роля #}
+      <label class="form-label">Роля</label>
+      <select name="role" class="form-select">
+        <option value="employee" {% if emp and emp.role=='employee' %}selected{% endif %}>Офис-служител</option>  {# опция за служител #}
+        <option value="courier" {% if emp and emp.role=='courier' %}selected{% endif %}>Куриер</option>  {# опция за куриер #}
+      </select>
+    </div>
+
+    <div class="col-md-3">  {# избор на офис #}
+      <label class="form-label">Офис</label>
+      <select name="office_id" class="form-select">
+        <option value="">—</option>  {# празна опция #}
+        {% for o in offices %}  {# цикъл през всички офиси #}
+        <option value="{{ o.id }}" {% if emp and emp.office_id==o.id %}selected{% endif %}>{{ o.name }}</option>  {# маркира текущия офис #}
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {% if not emp %}  {# секция за парола само при нов служител #}
+  <div class="row g-3 mt-1">
+    <div class="col-md-6">
+      <label class="form-label">Парола (по избор)</label>
+      <input name="password" class="form-control" placeholder="по подразбиране: changeme123">  {# по изборна парола #}
+    </div>
+  </div>
+  {% endif %}
+
+  <button class="btn btn-primary glow mt-3">Запази</button>  {# бутон за запис на данните #}
+</form>
+
+{% endblock %}  {# край на съдържателния блок #}

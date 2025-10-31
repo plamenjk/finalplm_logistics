@@ -1,0 +1,62 @@
+{% extends 'layout.html' %}  {# наследява основния шаблон layout.html #}
+{% block content %}  {# начало на блока със съдържанието #}
+
+<h3>Компания</h3>  {# заглавие на страницата #}
+
+<form method="post" class="card p-3">  {# форма за въвеждане/редакция на данни за компания #}
+
+  <div class="mb-2">  {# поле за име на компанията #}
+    <label class="form-label">Име</label>
+    <input name="name" class="form-control" value="{{ c.name if c }}">  {# стойност, ако има запис c #}
+  </div>
+
+  <div class="row g-2">  {# ред с четири полета за цени и множители #}
+    <div class="col-md-3">  {# базова цена на кг #}
+      <label class="form-label">Базова цена (лв/кг)</label>
+      <input name="base_price_per_kg" type="number" step="0.01" class="form-control" value="{{ c.base_price_per_kg if c else 2.50 }}">
+    </div>
+
+    <div class="col-md-3">  {# цена на километър #}
+      <label class="form-label">Цена на км (лв/км)</label>
+      <input name="per_km_rate" type="number" step="0.01" class="form-control" value="{{ c.per_km_rate if c else 0.40 }}">
+    </div>
+
+    <div class="col-md-3">  {# множител при доставка до офис #}
+      <label class="form-label">Множител: до офис</label>
+      <input name="office_delivery_multiplier" type="number" step="0.01" class="form-control" value="{{ c.office_delivery_multiplier if c else 1.0 }}">
+    </div>
+
+    <div class="col-md-3">  {# множител при доставка до адрес #}
+      <label class="form-label">Множител: до адрес</label>
+      <input name="address_delivery_multiplier" type="number" step="0.01" class="form-control" value="{{ c.address_delivery_multiplier if c else 1.4 }}">
+    </div>
+  </div>
+
+  <div class="row g-2 mt-2">  {# ред с множители по размер #}
+    <div class="col-md-4">  {# множител за размер S #}
+      <label class="form-label">Множител размер S</label>
+      <input name="size_multiplier_s" type="number" step="0.01" class="form-control" value="{{ c.size_multiplier_s if c else 0.90 }}">
+    </div>
+
+    <div class="col-md-4">  {# множител за размер M #}
+      <label class="form-label">Множител размер M</label>
+      <input name="size_multiplier_m" type="number" step="0.01" class="form-control" value="{{ c.size_multiplier_m if c else 1.00 }}">
+    </div>
+
+    <div class="col-md-4">  {# множител за размер L #}
+      <label class="form-label">Множител размер L</label>
+      <input name="size_multiplier_l" type="number" step="0.01" class="form-control" value="{{ c.size_multiplier_l if c else 1.20 }}">
+    </div>
+  </div>
+
+  <div class="mt-3">  {# бутон за запазване #}
+    <button class="btn btn-primary">Запази</button>
+  </div>
+
+  <div class="form-text mt-2">  {# пояснителна формула за изчисление на цената #}
+    Цена = (лв/кг × тегло + лв/км × км) × множител(офис/адрес) × множител(размер)
+  </div>
+
+</form>
+
+{% endblock %}  {# край на съдържателния блок #}

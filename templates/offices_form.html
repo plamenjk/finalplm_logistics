@@ -1,0 +1,93 @@
+{% extends 'layout.html' %}  {# наследява основния шаблон layout.html #}
+{% block content %}  {# начало на съдържателния блок #}
+
+<h3>{{ 'Редакция на офис' if office else 'Нов офис' }}</h3>  {# динамично заглавие според това дали се редактира или добавя офис #}
+
+<form method="post" class="card p-3">  {# форма за добавяне/редактиране на офис #}
+  <div class="mb-2">
+    <label class="form-label">Име</label>
+    <input name="name" class="form-control" value="{{ office.name if office }}" required>  {# поле за име на офиса #}
+  </div>
+
+  <div class="row g-2">  {# ред с две колони - град и адрес #}
+    <div class="col-md-6">
+      <label class="form-label">Град</label>
+      <input name="city" id="city" class="form-control" value="{{ office.city if office }}" required>  {# поле за град #}
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Адрес</label>
+      <input name="address" id="address" class="form-control" value="{{ office.address if office }}" required>  {# поле за адрес #}
+    </div>
+  </div>
+
+  <button class="btn btn-primary mt-3">Запази</button>  {# бутон за запис #}
+</form>
+
+<div class="card mt-3">  {# карта за визуализация на местоположението #}
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0">Преглед на местоположение (Leaflet + OSM)</h6>  {# заглавие на секцията #}
+      <button id="previewOffice" class="btn btn-outline-primary btn-sm" type="button">Провери на карта</button>  {# бутон за визуализация на адреса #}
+    </div>
+    <div id="officeMap" style="height: 320px;"></div>  {# контейнер за картата #}
+    <div class="small text-muted mt-2">Адресът се геокодира автоматично при запазване.</div>  {# пояснение #}
+  </div>
+</div>
+
+{# зареждане на Leaflet стилове и скрипт #}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+<script>
+(function(){
+  let map, marker;  // глобални променливи за карта и маркер
+
+  function init(){  // инициализация на картата
+    const mapEl = document.getElementById('officeMap');
+    const latAttr = mapEl.getAttribute('data-lat');
+    const lonAttr = mapEl.getAttribute('data-lon');
+
+    // default center (Sofia) if no coordinates provided
+    const defaultCenter = [42.6977, 23.3219];
+    const center = (latAttr && lonAttr) ? [parseFloat(latAttr), parseFloat(lonAttr)] : defaultCenter;
+
+    // initialize map and tile layer
+    map = L.map(mapEl).setView(center, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    if (latAttr && lonAttr) {  // ако има координати, показва маркер
+      const lat = parseFloat(latAttr);
+      const lon = parseFloat(lonAttr);
+      marker = L.marker([lat, lon]).addTo(map);
+    }
+  }
+
+  async function geocode(addr){  // извиква бекенд API за геокодиране
+    const url = new URL('/api/geocode', window.location.origin);
+    url.search = new URLSearchParams({ q: addr, format: 'json', limit: 1 });
+    const r = await fetch(url);
+    const j = await r.json();
+    return (Array.isArray(j) && j.length) ? [parseFloat(j[0].lat), parseFloat(j[0].lon)] : null;  // връща [lat, lon]
+  }
+
+  async function preview(){  // визуализира адреса на картата
+    const a = document.getElementById('address').value.trim();
+    const c = document.getElementById('city').value.trim();
+    if (!a || !c) return;  // проверка дали има въведени данни
+    const full = `${a}, ${c}, Bulgaria`;  // пълен адрес
+    const ll = await geocode(full);  // извличане на координати
+    if (!ll) return;  // ако няма резултат, спира
+    if (marker) map.removeLayer(marker);  // премахва стария маркер
+    marker = L.marker(ll).addTo(map);  // добавя нов маркер
+    map.setView(ll, 14);  // центрира върху адреса
+  }
+
+  window.addEventListener('load', init);  // стартира картата при зареждане 
+  document.getElementById('previewOffice').addEventListener('click', preview);  // слуша бутона за преглед
+})();
+</script>
+
+{% endblock %}  {# край на съдържателния блок #}

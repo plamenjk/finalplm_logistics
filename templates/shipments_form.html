@@ -1,0 +1,394 @@
+{% extends 'layout.html' %}  {# използва базовия шаблон #}
+{% block content %}  {# начало на съдържанието #}
+
+<h3>Нова пратка</h3>  {# заглавие на страницата #}
+
+<form method="post" class="card p-3">  {# основна форма #}
+
+  {# --- Подател и Получател --- #}
+  <div class="row g-2">  {# ред с 2 колони #}
+    <div class="col-md-6">  {# колона: Подател #}
+      <label class="form-label">Подател</label>
+      <select name="sender_client_id" class="form-select" required>  {# списък клиенти #}
+        {% for c in clients %}  {# обхождане на клиенти #}
+          <option value="{{ c.id }}">{{ c.name }}</option>  {# показва име, пази id #}
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">  {# колона: Получател #}
+      <label class="form-label">Получател</label>
+      <select name="recipient_client_id" class="form-select" required>
+        {% for c in clients %}
+          <option value="{{ c.id }}">{{ c.name }}</option>  {# избор на получател #}
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {# --- Произход и Доставка --- #}
+  <div class="row g-2 mt-2">
+    <div class="col-md-6">  {# секция: Произход #}
+      <label class="form-label">Произход</label>
+      <!-- ПРОИЗХОД -->
+      <div class="form-check form-switch">  {# превключване: от офис / от адрес #}
+        <input class="form-check-input" type="checkbox" id="pickup_from_office" name="pickup_from_office" checked>  {# по подразбиране: офис #}
+        <label class="form-check-label ms-2" for="pickup_from_office">Взимане от офис</label>
+      </div>
+      <select id="origin_office_select" name="origin_office_id" class="form-select mt-1">  {# избор офис на произход #}
+        <option value="">—</option>
+        {% for o in offices %}  {# офиси от бекенда #}
+          <option value="{{ o.id }}">{{ o.name }}</option>
+        {% endfor %}
+      </select>
+      <div class="position-relative">  {# контейнер за адрес + подсказки #}
+        <input id="pickup_address_input" name="pickup_address" class="form-control mt-2 d-none"
+               placeholder="Адрес на взимане: ул., №, град" autocomplete="off">  {# поле, когато НЕ е от офис #}
+        <div id="pickup_suggest" class="autocomplete-list d-none"></div>  {# падащ списък подсказки #}
+      </div>
+    </div>
+
+    <div class="col-md-6">  {# секция: Доставка #}
+      <label class="form-label">Доставка</label>
+      <!-- ДОСТАВКА -->
+      <div class="form-check">  {# превключвател: до офис #}
+        <input class="form-check-input" type="checkbox" id="to_office" name="to_office" checked>
+        <label class="form-check-label ms-2" for="to_office">До офис (по-евтино)</label>
+      </div>
+      <select name="destination_office_id" id="destination_office_id" class="form-select mt-1">  {# избор офис на доставка #}
+        <option value="">—</option>
+        {% for o in offices %}
+          <option value="{{ o.id }}">{{ o.name }}</option>
+        {% endfor %}
+      </select>
+      <div class="position-relative">  {# контейнер за адрес на доставка #}
+        <input id="delivery_address_input" name="delivery_address" class="form-control mt-2"
+               placeholder="Адрес за доставка (ако е до адрес)" autocomplete="off">  {# активира се при доставка ДО АДРЕС #}
+        <div id="delivery_suggest" class="autocomplete-list d-none"></div>  {# подсказки за адрес #}
+      </div>
+    </div>
+  </div>
+
+  {# --- Параметри на пратката --- #}
+  <div class="row g-2 mt-2">
+    <div class="col-md-4">  {# тегло #}
+      <label class="form-label">Тегло (кг)</label>
+      <input id="weight_kg" name="weight_kg" type="number" min="0.01" step="0.01"
+             class="form-control" value="1.00" required>
+    </div>
+    <div class="col-md-4">  {# размер #}
+      <label class="form-label">Размер</label>
+      <select id="size" name="size" class="form-select">
+        <option value="S">Малка</option>
+        <option value="M" selected>Средна</option>  {# по подразбиране #}
+        <option value="L">Голяма</option>
+      </select>
+    </div>
+    <div class="col-md-4">  {# резервно разстояние #}
+      <label class="form-label">Разстояние (км) (резервно)</label>
+      <input id="distance_km" name="distance_km" type="number" min="0" step="0.1"
+             class="form-control" value="5.0">  {# попълва се автоматично от маршрута #}
+    </div>
+  </div>
+
+  {# --- Настройки за връщане и служител --- #}
+  <div class="row g-2 mt-2">
+    <div class="col-md-6">  {# политика за връщане #}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="return_to_office" name="return_to_office">  {# включва връщане #}
+        <label class="form-label" for="return_to_office">Връщане до избран офис, ако не се вземе на адреса</label>
+      </div>
+      <select name="return_office_id" id="return_office_id" class="form-select mt-1" disabled>  {# офис за връщане #}
+        <option value="">— избери офис —</option>
+        {% for o in offices %}
+          <option value="{{ o.id }}">{{ o.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-6">  {# служител, регистрирал пратката #}
+      <label class="form-label">Регистрирал служител</label>
+      <select name="registered_by_employee_id" class="form-select">
+        <option value="">(текущият потребител)</option>  {# остави празно за текущия #}
+        {% for e in employees %}  {# налични служители #}
+          <option value="{{ e.id }}" {% if my_emp and my_emp.id == e.id %}selected{% endif %}>
+            {{ e.name }} — {{ e.office_name }} [{{ e.role }}]
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {# --- Преглед на изчислената цена (Live) --- #}
+  <div class="row g-2 mt-3">
+    <div class="col-md-6">
+      <div class="card">  {# карта за визуализация #}
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">  {# цена + статус #}
+            <div>
+              <div class="small text-muted">Очаквана цена</div>
+              <div id="pricePreview" class="form-label">—</div>  {# стойност в реално време #}
+            </div>
+            <div><span class="badge bg-info">Live</span></div>  {# индикатор Live #}
+          </div>
+          <div class="small text-muted mt-2">
+            Формула: (лв/кг × тегло + лв/км × км) × множител(офис/адрес) × множител(размер)  {# пояснение #}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary mt-3">Запази</button>  {# изпращане на формата #}
+</form>
+
+<p class="text-muted mt-2">
+  Разстоянието се изчислява автоматично. Ако услугата е недостъпна, използвайте резервното поле.  {# указание към потребителя #}
+</p>
+
+<!-- КАРТА -->
+<div class="text-muted mt-2">  {# контейнер за картата/маршрута #}
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0">Маршрут</h6>
+      <button id="previewRouteBtn" type="button" class="btn btn-primary glow">Преглед на маршрут</button>  {# ръчно обновяване #}
+    </div>
+    <div id="map" style="height:360px;"></div>  {# елемент за Leaflet картата #}
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>  {# стил за Leaflet #}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>  {# Leaflet JS #}
+
+<script>
+(function(){
+  // Нежна защита – ако route-скриптът още не е дефиниран
+  window.triggerRouteUpdateSoon = window.triggerRouteUpdateSoon || function(){};  // noop, ако липсва
+
+  // Origin toggle (офис/адрес)
+  const sw  = document.getElementById('pickup_from_office');   // чекбокс "взимане от офис"
+  const sel = document.getElementById('origin_office_select'); // селект за офис
+  const addr= document.getElementById('pickup_address_input'); // поле за адрес
+  const pickupSuggest = document.getElementById('pickup_suggest'); // контейнер подсказки
+
+  function syncOrigin(){  // показва/скрива поле според чекбокса
+    if (sw.checked){
+      sel.classList.remove('d-none'); sel.disabled = false;
+      addr.classList.add('d-none');
+    } else {
+      sel.classList.add('d-none'); sel.disabled = true;
+      addr.classList.remove('d-none');
+    }
+    window.triggerRouteUpdateSoon(); // извести маршрута
+  }
+  sw.addEventListener('change', syncOrigin); syncOrigin();  // инициално състояние
+
+  // Return office toggle (връщане до офис)
+  const rb = document.getElementById('return_to_office');  // чекбокс връщане
+  const ro = document.getElementById('return_office_id');  // селект офис за връщане
+  function syncReturn(){ ro.disabled = !rb.checked; }  // активира при чек
+  rb.addEventListener('change', syncReturn); syncReturn();
+
+  // Destination toggle (до офис / до адрес)
+  const toOffice  = document.getElementById('to_office');               // чекбокс "до офис"
+  const destSel   = document.getElementById('destination_office_id');   // селект офис
+  const delivery  = document.getElementById('delivery_address_input');  // поле адрес
+  const deliverySuggest = document.getElementById('delivery_suggest');  // подсказки адрес
+
+  function syncDestination(){  // синхронизира UI според избора
+    if (toOffice.checked){
+      destSel.disabled = false;
+      delivery.disabled = true;
+      delivery.classList.remove('is-invalid');
+    } else {
+      destSel.disabled = true;
+      destSel.value = '';      // чисти избора
+      delivery.disabled = false;
+    }
+    window.triggerRouteUpdateSoon();  // обнови маршрут/цена
+  }
+  toOffice.addEventListener('change', syncDestination); syncDestination();
+
+  // Автоподсказки (Nominatim proxy /api/geocode)
+  function attachAutocomplete(inputEl, listEl){  // връзка поле ↔ списък подсказки
+    let t=null;  // таймер за дебоунс
+    inputEl.addEventListener('input', ()=>{
+      inputEl.dataset.lat=''; inputEl.dataset.lon='';  // чисти координатите
+      const q = inputEl.value.trim();  // въведен текст
+      clearTimeout(t);
+      if (q.length < 3){  // твърде късо → скрий списъка
+        listEl.classList.add('d-none'); listEl.innerHTML='';
+        window.triggerRouteUpdateSoon();
+        return;
+      }
+      t = setTimeout(async ()=>{
+        const u = new URL('/api/geocode', location.origin); u.search = new URLSearchParams({q});  // заявка
+        const r = await fetch(u); const items = await r.json();  // получени резултати
+        listEl.innerHTML='';
+        (items||[]).forEach(it=>{  // за всеки резултат
+          const d = document.createElement('div');
+          d.className='autocomplete-item';
+          d.textContent = it.display_name;  // показва пълния адрес
+          d.addEventListener('click', ()=>{  // избор на подсказка
+            inputEl.value = it.display_name;
+            inputEl.dataset.lat = it.lat; inputEl.dataset.lon = it.lon;  // пази координати
+            listEl.classList.add('d-none'); listEl.innerHTML='';
+            window.triggerRouteUpdateSoon();  // обнови маршрут/цена
+          });
+          listEl.appendChild(d);
+        });
+        listEl.classList.toggle('d-none', !listEl.children.length);  // скрий ако няма елементи
+      }, 300); // 300ms дебоунс
+    });
+    // клик извън списъка → скрий
+    document.addEventListener('click', (e)=>{ if(!listEl.contains(e.target) && e.target!==inputEl){ listEl.classList.add('d-none'); }});
+  }
+  attachAutocomplete(addr, pickupSuggest);                 // подсказки за произход адрес
+  attachAutocomplete(delivery, deliverySuggest);           // подсказки за доставка адрес
+})();
+</script>
+
+<script>
+(function(){
+  let map, routeLayer, originMarker, destMarker;  // състояние на картата/маршрута
+
+  function init(){  // инициализация на Leaflet
+    map = L.map('map').setView([42.6977,23.3219], 7);  // център: София (BG)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);  // OSM плочки
+  }
+
+  function officeLL(id){  // връща [lat,lon] за офис по id
+    const M = (window.OFFICES || {}); id = String(id || '').trim();
+    if (M[id] && M[id].lat != null && M[id].lon != null) return [M[id].lat, M[id].lon];
+    return null;  // няма координати
+  }
+
+  async function geocode(addr){  // геокодира свободен адрес чрез бекенд proxy
+    const u = new URL('/api/geocode', location.origin); u.search = new URLSearchParams({q:addr});
+    const r = await fetch(u); const j = await r.json();
+    if (Array.isArray(j) && j.length) return [parseFloat(j[0].lat), parseFloat(j[0].lon)];
+    return null;  // без резултат
+  }
+
+  async function updateRoute(){  // изчислява и чертае маршрут
+    const pickupFromOffice = document.getElementById('pickup_from_office').checked;  // произход от офис?
+    const toOffice         = document.getElementById('to_office').checked;           // доставка до офис?
+    const originOfficeId   = document.getElementById('origin_office_select').value;  // id офис произход
+    const destOfficeId     = document.getElementById('destination_office_id').value; // id офис дестинация
+    const pickupInput      = document.getElementById('pickup_address_input');        // поле адрес произход
+    const deliveryInput    = document.getElementById('delivery_address_input');      // поле адрес дестинация
+
+    let o=null, d=null;  // координати: origin, destination
+
+    // Определи произход
+    if (pickupFromOffice){
+      o = officeLL(originOfficeId);
+    } else {
+      if (pickupInput.dataset.lat && pickupInput.dataset.lon) o=[+pickupInput.dataset.lat, +pickupInput.dataset.lon];
+      else if (pickupInput.value.trim().length > 5)          o=await geocode(pickupInput.value.trim());
+    }
+
+    // Определи дестинация
+    if (toOffice){
+      d = officeLL(destOfficeId);
+    } else {
+      if (deliveryInput.dataset.lat && deliveryInput.dataset.lon) d=[+deliveryInput.dataset.lat, +deliveryInput.dataset.lon];
+      else if (deliveryInput.value.trim().length > 5)             d=await geocode(deliveryInput.value.trim());
+    }
+
+    if (!o || !d) return;  // изискваме две точки
+
+    // Вика бекенд /api/route за маршрут и разстояние
+    const url = new URL('/api/route', location.origin);
+    url.search = new URLSearchParams({o_lat:o[0], o_lon:o[1], d_lat:d[0], d_lon:d[1]});
+    const res = await fetch(url); const data = await res.json();
+    if (!data || !data.routes || !data.routes.length) return;  // без резултат
+
+    const route = data.routes[0];  // вземаме първия маршрут
+    const kmRaw = route.distance / 1000;  // метри → км
+    const kmRounded = Math.round(kmRaw * 10) / 10; // закръгля до 0.1 км
+    const distField = document.getElementById('distance_km');
+    if (distField) {
+      distField.value = kmRounded.toFixed(3);   // записва като резервно разстояние
+      distField.dataset.autofilled = "3";      // маркер за стил/проследимост
+    }
+
+    // Обнови слоевете
+    if (routeLayer)   map.removeLayer(routeLayer);
+    if (originMarker) map.removeLayer(originMarker);
+    if (destMarker)   map.removeLayer(destMarker);
+
+    originMarker = L.marker(o).addTo(map);           // маркер произход
+    destMarker   = L.marker(d).addTo(map);           // маркер дестинация
+    routeLayer   = L.geoJSON(route.geometry).addTo(map);  // геометрия на маршрута
+
+    map.fitBounds(L.latLngBounds([o,d]).pad(0.25));  // кадрира
+  }
+
+  let t=null;  // таймер за дебоунс
+  function trigger(){ clearTimeout(t); t=setTimeout(updateRoute, 500); } // забавя обновяването
+
+  // expose за ценообразуването (друг скрипт)
+  window.updateRoute = updateRoute;              // директно обновяване
+  window.triggerRouteUpdateSoon = trigger;       // планирано обновяване
+
+  window.addEventListener('load', ()=>{  // стартиране
+    init();  // инициализира картата
+    ['pickup_from_office','origin_office_select','to_office','destination_office_id',
+     'pickup_address_input','delivery_address_input','size','weight_kg']
+     .forEach(id=>{
+      const el=document.getElementById(id); if(!el) return;
+      el.addEventListener('change', trigger);  // промяна на стойност
+      el.addEventListener('input', trigger);   // при въвеждане
+    });
+    const btn=document.getElementById('previewRouteBtn');  // бутон "Преглед на маршрут"
+    if (btn) btn.addEventListener('click', updateRoute);   // форсира изчисление
+    setTimeout(updateRoute, 300);  // първоначален опит за маршрут
+  });
+})();
+</script>
+
+<script>
+(function(){
+  function computePrice(){  // пресмята цената
+    const c = window.COMPANY || {};  // конфигурация
+    const w = parseFloat(document.getElementById('weight_kg').value || '0') || 0;  // тегло
+    const d = parseFloat(document.getElementById('distance_km').value || '0') || 0; // разстояние
+    const toOffice = document.getElementById('to_office').checked;  // офис/адрес
+    const sz = (document.getElementById('size').value || 'M').toUpperCase();  // размер
+
+    const base  = (c.base_price_per_kg||2.5) * Math.max(w,0);     // базова част по кг
+    const dpart = (c.per_km_rate||0.4)       * Math.max(d,0);     // част по км
+    const multDelivery = toOffice ? (c.office_delivery_multiplier||1.0)
+                                  : (c.address_delivery_multiplier||1.4);  // множител по тип доставка
+    let multSize = (c.size_multiplier_m||1.0);  // множител по размер
+    if (sz==='S') multSize = (c.size_multiplier_s||0.9);
+    if (sz==='L') multSize = (c.size_multiplier_l||1.2);
+
+    const price = (base + dpart) * multDelivery * multSize;  // крайна цена
+    return Math.max(0, Math.round(price*100)/100).toFixed(2); // 2 знака след запетая
+  }
+
+  function renderPrice(){  // обновява UI
+    const el = document.getElementById('pricePreview');
+    if (el) el.textContent = computePrice() + ' лв';  // показва цена
+  }
+
+  // слушатели за входни полета, влияещи на цената
+  ['weight_kg','distance_km','size','to_office'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.addEventListener('input', renderPrice);
+    el.addEventListener('change', renderPrice);
+  });
+
+  // синхрон с авто-маршрута: след обновяване на маршрут → обнови и цената
+  const old = window.triggerRouteUpdateSoon;  // запази оригинала
+  window.triggerRouteUpdateSoon = function(){  // декориране
+    if(old) old();                             // извикай оригинала
+    setTimeout(renderPrice, 600);              // леко забавяне за да има разстояние
+  };
+
+  window.addEventListener('load', ()=> setTimeout(renderPrice, 300));  // първоначално изчисление
+})();
+</script>
+
+{% endblock %}  {# край на съдържанието #}

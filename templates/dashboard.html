@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}  {# наследява основния шаблон layout.html #}
+{% block content %}  {# начало на съдържателния блок #}
+
+<div class="d-flex justify-content-between align-items-center mb-3">  {# контейнер за заглавието и бутона #}
+  <h3>Табло</h3>  {# заглавие на страницата #}
+
+  {% if user.role in ['employee','admin'] %}  {# проверка на ролята на потребителя #}
+    <a class="btn btn-success glow" href="{{ url_for('shipments_new') }}">  {# бутон за създаване на нова пратка #}
+      <i class="bi bi-plus-lg"></i> Нова пратка  {# икона и текст на бутона #}
+    </a>
+  {% endif %}
+</div>
+
+<div class="card">  {# контейнер-карта за визуално оформление #}
+  <div class="card-body">  {# тяло на картата #}
+    <h5 class="card-title">Последни пратки</h5>  {# подзаглавие за таблицата с пратки #}
+    {% include 'partials/shipments_table.html' with context %}  {# вмъква частичен шаблон за таблица с пратки #}
+  </div>
+</div>
+
+{% endblock %}  {# край на блока със съдържанието #}

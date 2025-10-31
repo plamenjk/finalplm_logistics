@@ -1,0 +1,23 @@
+<div class="table-responsive">
+  <table class="table table-sm table-striped">
+    <thead><tr>
+      <th>#</th><th>Подател</th><th>Получател</th><th>Размер</th><th>Тегло (кг)</th><th>Разстояние (км)</th><th>Тип</th><th>Цена</th><th>Статус</th><th></th>
+    </tr></thead>
+    <tbody>
+      {% for s in shipments %}
+      <tr>
+        <td>{{ s.id }}</td>
+        <td>{{ s.sender_name }}</td>
+        <td>{{ s.recipient_name }}</td>
+        <td>{{ s.size }}</td>
+        <td>{{ '%.2f'|format(s.weight_kg) }}</td>
+        <td>{{ '%.1f'|format(s.distance_km or 0) }}</td>
+        <td>{{ 'до офис' if s.to_office else 'до адрес' }}</td>
+        <td>{{ '%.2f'|format(s.price) }} лв</td>
+        <td>{{ s.status }}</td>
+        <td><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('shipments_view', shipment_id=s.id) }}"><i class="bi bi-eye"></i></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}  {# Наследява основния шаблон layout.html #}
+{% block content %}  {# Начало на основния блок със съдържание #}
+
+<h3>{{ 'Редакция на клиент' if client else 'Нов клиент' }}</h3>  {# Заглавие – зависи дали се редактира или създава клиент #}
+
+<form method="post" class="card p-3">  {# Форма за въвеждане на данни, изпраща POST заявка #}
+  <div class="row g-2">  {# Контейнер с две колони – име и фамилия #}
+    <div class="col-md-6">
+      <label class="form-label">Име</label> 
+      <input name="first_name" class="form-control" value="{{ client.first_name if client }}" required>  {# Поле за име #}
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Фамилия</label>
+      <input name="last_name" class="form-control" value="{{ client.last_name if client }}" required>  {# Поле за фамилия #}
+    </div>
+  </div>
+
+  <div class="mb-2 mt-2">
+    <label class="form-label">Телефон</label>
+    <input name="phone" class="form-control" value="{{ client.phone if client }}" required>  {# Поле за телефон #}
+  </div>
+
+  {% if not client %}  {# Показва се само при нов клиент (не при редакция) #}
+  <div class="mb-2">
+    <label class="form-label">Имейл</label>
+    <input name="email" type="email" class="form-control" required>  {# Поле за имейл #}
+  </div>
+  <div class="mb-2">
+    <label class="form-label">Парола (по избор)</label>
+    <input name="password" type="text" class="form-control" placeholder="ако е празно: changeme123">  {# Поле за парола #}
+  </div>
+  {% endif %}
+
+  <button class="btn btn-primary glow">Запази</button>  {# Бутон за запис на данните #}
+</form>
+
+{% endblock %}
