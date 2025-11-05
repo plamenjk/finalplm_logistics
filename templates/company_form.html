@@ -3,7 +3,8 @@
 
 <h3>Компания</h3>  {# заглавие на страницата #}
 
-<form method="post" class="card p-3">  {# форма за въвеждане/редакция на данни за компания #}
+<form method="post" class="card p-3"
+      action="{{ url_for('company.company_form') }}">  {# форма за въвеждане/редакция на данни за компания #}
 
   <div class="mb-2">  {# поле за име на компанията #}
     <label class="form-label">Име</label>

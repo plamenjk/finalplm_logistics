@@ -3,7 +3,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">  {# контейнер за заглавие и бутон #}
   <h3>Клиенти</h3>  {# заглавие на страницата #}
-  <a class="btn btn-primary" href="{{ url_for('clients_new') }}">  {# бутон за добавяне на нов клиент #}
+  <a class="btn btn-primary" href="{{ url_for('customers.clients_new') }}">  {# бутон за добавяне на нов клиент #}
     <i class="bi bi-plus-lg"></i> Нов клиент  {# икона и текст на бутона #}
   </a>
 </div>
@@ -21,10 +21,10 @@
         <td>{{ c.email }}</td>  {# имейл адрес #}
         <td>{{ c.phone }}</td>  {# телефонен номер #}
         <td>  {# колона с бутони за действия #}
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('clients_edit', client_id=c.id) }}">  {# бутон за редакция #}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('customers.clients_edit', client_id=c.id) }}">  {# бутон за редакция #}
             <i class="bi bi-pencil-square"></i>  {# икона за редакция #}
           </a>
-          <a class="btn btn-sm btn-outline-danger" href="{{ url_for('clients_delete', client_id=c.id) }}" onclick="return confirm('Изтриване?')">  {# бутон за изтриване с потвърждение #}
+          <a class="btn btn-sm btn-outline-danger" href="{{ url_for('customers.clients_delete', client_id=c.id) }}" onclick="return confirm('Изтриване?')">  {# бутон за изтриване с потвърждение #}
             <i class="bi bi-trash"></i>  {# икона за кошче #}
           </a>
         </td>

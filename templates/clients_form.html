@@ -1,9 +1,20 @@
 {% extends 'layout.html' %}  {# Наследява основния шаблон layout.html #}
 {% block content %}  {# Начало на основния блок със съдържание #}
 
-<h3>{{ 'Редакция на клиент' if client else 'Нов клиент' }}</h3>  {# Заглавие – зависи дали се редактира или създава клиент #}
+<h3>{{ 'Редакция на клиент' if client else 'Нов клиент' }}</h3>  {# Заглавие – зависи дали се редактира или създава клиента #}
 
-<form method="post" class="card p-3">  {# Форма за въвеждане на данни, изпраща POST заявка #}
+<form 
+  method="post" 
+  class="card p-3"
+  action="
+    {% if client %}
+      {{ url_for('customers.clients_edit', client_id=client.id) }}
+    {% else %}
+      {{ url_for('customers.clients_new') }}
+    {% endif %}
+  "
+>  {# Форма за въвеждане на данни, изпраща POST заявка към правилния blueprint endpoint #}
+
   <div class="row g-2">  {# Контейнер с две колони – име и фамилия #}
     <div class="col-md-6">
       <label class="form-label">Име</label> 

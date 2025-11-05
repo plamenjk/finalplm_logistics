@@ -3,7 +3,7 @@
 
 <h3>Нова пратка</h3>  {# заглавие на страницата #}
 
-<form method="post" class="card p-3">  {# основна форма #}
+<form method="post" class="card p-3" action="{{ url_for('shipments.shipments_new') }}">  {# основна форма #}
 
   {# --- Подател и Получател --- #}
   <div class="row g-2">  {# ред с 2 колони #}
@@ -145,6 +145,37 @@
   Разстоянието се изчислява автоматично. Ако услугата е недостъпна, използвайте резервното поле.  {# указание към потребителя #}
 </p>
 
+{# --- JS данни към фронта: OFFICES и COMPANY --- #}
+{% set OFF = namespace(v={}) %}
+{% for o in offices %}
+  {% set _ = OFF.v.update({
+    (o.id|string): {
+      "lat": o.lat,
+      "lon": o.lon,
+      "name": o.name,
+      "city": o.city
+    }
+  }) %}
+{% endfor %}
+
+{% set COMPANY = {
+  "base_price_per_kg": (c.base_price_per_kg if c else 2.5),
+  "per_km_rate": (c.per_km_rate if c else 0.40),
+  "office_delivery_multiplier": (c.office_delivery_multiplier if c else 1.0),
+  "address_delivery_multiplier": (c.address_delivery_multiplier if c else 1.4),
+  "size_multiplier_s": (c.size_multiplier_s if c else 0.90),
+  "size_multiplier_m": (c.size_multiplier_m if c else 1.00),
+  "size_multiplier_l": (c.size_multiplier_l if c else 1.20)
+} %}
+
+<script id="offices-json" type="application/json">{{ OFF.v | tojson }}</script>
+<script id="company-json" type="application/json">{{ COMPANY | tojson }}</script>
+<script>
+  window.OFFICES = JSON.parse(document.getElementById('offices-json').textContent || '{}');
+  window.COMPANY = JSON.parse(document.getElementById('company-json').textContent || '{}');
+</script>
+
+
 <!-- КАРТА -->
 <div class="text-muted mt-2">  {# контейнер за картата/маршрута #}
   <div class="card-body">
@@ -212,7 +243,8 @@
   function attachAutocomplete(inputEl, listEl){  // връзка поле ↔ списък подсказки
     let t=null;  // таймер за дебоунс
     inputEl.addEventListener('input', ()=>{
-      inputEl.dataset.lat=''; inputEl.dataset.lon='';  // чисти координатите
+      inputEl.dataset.lat=''; inputEl.dataset.lon=''; 
+      window.triggerRouteUpdateSoon(); // чисти координатите
       const q = inputEl.value.trim();  // въведен текст
       clearTimeout(t);
       if (q.length < 3){  // твърде късо → скрий списъка
@@ -249,37 +281,37 @@
 
 <script>
 (function(){
-  let map, routeLayer, originMarker, destMarker;  // състояние на картата/маршрута
+  let map, routeLayer, originMarker, destMarker;  //състояние на картата/маршрута #}
 
-  function init(){  // инициализация на Leaflet
-    map = L.map('map').setView([42.6977,23.3219], 7);  // център: София (BG)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);  // OSM плочки
+  function init(){  // инициализация на Leaflet #}
+    map = L.map('map').setView([42.6977,23.3219], 7);  // център: София (BG) #}
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);  // OSM плочки #}
   }
 
-  function officeLL(id){  // връща [lat,lon] за офис по id
+  function officeLL(id){  // връща [lat,lon] за офис по id #}
     const M = (window.OFFICES || {}); id = String(id || '').trim();
     if (M[id] && M[id].lat != null && M[id].lon != null) return [M[id].lat, M[id].lon];
-    return null;  // няма координати
+    return null;  // няма координати #}
   }
 
-  async function geocode(addr){  // геокодира свободен адрес чрез бекенд proxy
+  async function geocode(addr){  // геокодира свободен адрес чрез бекенд proxy #}
     const u = new URL('/api/geocode', location.origin); u.search = new URLSearchParams({q:addr});
     const r = await fetch(u); const j = await r.json();
     if (Array.isArray(j) && j.length) return [parseFloat(j[0].lat), parseFloat(j[0].lon)];
-    return null;  // без резултат
+    return null;  // без резултат #}
   }
 
-  async function updateRoute(){  // изчислява и чертае маршрут
-    const pickupFromOffice = document.getElementById('pickup_from_office').checked;  // произход от офис?
-    const toOffice         = document.getElementById('to_office').checked;           // доставка до офис?
-    const originOfficeId   = document.getElementById('origin_office_select').value;  // id офис произход
-    const destOfficeId     = document.getElementById('destination_office_id').value; // id офис дестинация
-    const pickupInput      = document.getElementById('pickup_address_input');        // поле адрес произход
-    const deliveryInput    = document.getElementById('delivery_address_input');      // поле адрес дестинация
+  async function updateRoute(){  // изчислява и чертае маршрут #}
+    const pickupFromOffice = document.getElementById('pickup_from_office').checked;  // произход от офис? #}
+    const toOffice         = document.getElementById('to_office').checked;           // доставка до офис? #}
+    const originOfficeId   = document.getElementById('origin_office_select').value;  // id офис произход #}
+    const destOfficeId     = document.getElementById('destination_office_id').value; // id офис дестинация #}
+    const pickupInput      = document.getElementById('pickup_address_input');        // поле адрес произход #}
+    const deliveryInput    = document.getElementById('delivery_address_input');      // поле адрес дестинация #}
 
-    let o=null, d=null;  // координати: origin, destination
+    let o=null, d=null;  // координати: origin, destination #}
 
-    // Определи произход
+    // Определи произход #}
     if (pickupFromOffice){
       o = officeLL(originOfficeId);
     } else {
@@ -287,7 +319,7 @@
       else if (pickupInput.value.trim().length > 5)          o=await geocode(pickupInput.value.trim());
     }
 
-    // Определи дестинация
+    // Определи дестинация #}
     if (toOffice){
       d = officeLL(destOfficeId);
     } else {
@@ -295,99 +327,99 @@
       else if (deliveryInput.value.trim().length > 5)             d=await geocode(deliveryInput.value.trim());
     }
 
-    if (!o || !d) return;  // изискваме две точки
+    if (!o || !d) return;  // изискваме две точки #}
 
-    // Вика бекенд /api/route за маршрут и разстояние
+    // Вика бекенд /api/route за маршрут и разстояние #}
     const url = new URL('/api/route', location.origin);
     url.search = new URLSearchParams({o_lat:o[0], o_lon:o[1], d_lat:d[0], d_lon:d[1]});
     const res = await fetch(url); const data = await res.json();
-    if (!data || !data.routes || !data.routes.length) return;  // без резултат
+    if (!data || !data.routes || !data.routes.length) return;  // без резултат #}
 
-    const route = data.routes[0];  // вземаме първия маршрут
-    const kmRaw = route.distance / 1000;  // метри → км
-    const kmRounded = Math.round(kmRaw * 10) / 10; // закръгля до 0.1 км
+    const route = data.routes[0];  // вземаме първия маршрут #}
+    const kmRaw = route.distance / 1000;  // метри → км #}
+    const kmRounded = Math.round(kmRaw * 10) / 10; // закръгля до 0.1 км #}
     const distField = document.getElementById('distance_km');
     if (distField) {
-      distField.value = kmRounded.toFixed(3);   // записва като резервно разстояние
-      distField.dataset.autofilled = "3";      // маркер за стил/проследимост
+      distField.value = kmRounded.toFixed(3);   // записва като резервно разстояние #}
+      distField.dataset.autofilled = "3";      // маркер за стил/проследимост #}
     }
 
-    // Обнови слоевете
+    // Обнови слоевете #}
     if (routeLayer)   map.removeLayer(routeLayer);
     if (originMarker) map.removeLayer(originMarker);
     if (destMarker)   map.removeLayer(destMarker);
 
-    originMarker = L.marker(o).addTo(map);           // маркер произход
-    destMarker   = L.marker(d).addTo(map);           // маркер дестинация
-    routeLayer   = L.geoJSON(route.geometry).addTo(map);  // геометрия на маршрута
+    originMarker = L.marker(o).addTo(map);           // маркер произход #}
+    destMarker   = L.marker(d).addTo(map);           // маркер дестинация #}
+    routeLayer   = L.geoJSON(route.geometry).addTo(map);  // геометрия на маршрута #}
 
-    map.fitBounds(L.latLngBounds([o,d]).pad(0.25));  // кадрира
+    map.fitBounds(L.latLngBounds([o,d]).pad(0.25));  // кадрира #}
   }
 
-  let t=null;  // таймер за дебоунс
-  function trigger(){ clearTimeout(t); t=setTimeout(updateRoute, 500); } // забавя обновяването
+  let t=null;  // таймер за дебоунс #}
+  function trigger(){ clearTimeout(t); t=setTimeout(updateRoute, 500); } // забавя обновяването #}
 
-  // expose за ценообразуването (друг скрипт)
-  window.updateRoute = updateRoute;              // директно обновяване
-  window.triggerRouteUpdateSoon = trigger;       // планирано обновяване
+  // expose за ценообразуването (друг скрипт) #}
+  window.updateRoute = updateRoute;              // директно обновяване #}
+  window.triggerRouteUpdateSoon = trigger;       // планирано обновяване #}
 
-  window.addEventListener('load', ()=>{  // стартиране
-    init();  // инициализира картата
+  window.addEventListener('load', ()=>{  // стартиране #}
+    init();  // инициализира картата #}
     ['pickup_from_office','origin_office_select','to_office','destination_office_id',
      'pickup_address_input','delivery_address_input','size','weight_kg']
      .forEach(id=>{
       const el=document.getElementById(id); if(!el) return;
-      el.addEventListener('change', trigger);  // промяна на стойност
-      el.addEventListener('input', trigger);   // при въвеждане
+      el.addEventListener('change', trigger);  // промяна на стойност #}
+      el.addEventListener('input', trigger);   // при въвеждане #}
     });
-    const btn=document.getElementById('previewRouteBtn');  // бутон "Преглед на маршрут"
-    if (btn) btn.addEventListener('click', updateRoute);   // форсира изчисление
-    setTimeout(updateRoute, 300);  // първоначален опит за маршрут
+    const btn=document.getElementById('previewRouteBtn');  // бутон "Преглед на маршрут" #}
+    if (btn) btn.addEventListener('click', updateRoute);   // форсира изчисление #}
+    setTimeout(updateRoute, 300);  // първоначален опит за маршрут #}
   });
 })();
 </script>
 
 <script>
 (function(){
-  function computePrice(){  // пресмята цената
-    const c = window.COMPANY || {};  // конфигурация
-    const w = parseFloat(document.getElementById('weight_kg').value || '0') || 0;  // тегло
-    const d = parseFloat(document.getElementById('distance_km').value || '0') || 0; // разстояние
-    const toOffice = document.getElementById('to_office').checked;  // офис/адрес
-    const sz = (document.getElementById('size').value || 'M').toUpperCase();  // размер
+  function computePrice(){  // пресмята цената #}
+    const c = window.COMPANY || {};  // конфигурация #}
+    const w = parseFloat(document.getElementById('weight_kg').value || '0') || 0;  // тегло #}
+    const d = parseFloat(document.getElementById('distance_km').value || '0') || 0; // разстояние #}
+    const toOffice = document.getElementById('to_office').checked;  // офис/адрес #}
+    const sz = (document.getElementById('size').value || 'M').toUpperCase();  // размер #}
 
-    const base  = (c.base_price_per_kg||2.5) * Math.max(w,0);     // базова част по кг
-    const dpart = (c.per_km_rate||0.4)       * Math.max(d,0);     // част по км
+    const base  = (c.base_price_per_kg||2.5) * Math.max(w,0);     // базова част по кг #}
+    const dpart = (c.per_km_rate||0.4)       * Math.max(d,0);     // част по км #}
     const multDelivery = toOffice ? (c.office_delivery_multiplier||1.0)
-                                  : (c.address_delivery_multiplier||1.4);  // множител по тип доставка
-    let multSize = (c.size_multiplier_m||1.0);  // множител по размер
+                                  : (c.address_delivery_multiplier||1.4);  // множител по тип доставка #}
+    let multSize = (c.size_multiplier_m||1.0);  // множител по размер #}
     if (sz==='S') multSize = (c.size_multiplier_s||0.9);
     if (sz==='L') multSize = (c.size_multiplier_l||1.2);
 
-    const price = (base + dpart) * multDelivery * multSize;  // крайна цена
-    return Math.max(0, Math.round(price*100)/100).toFixed(2); // 2 знака след запетая
+    const price = (base + dpart) * multDelivery * multSize;  // крайна цена #}
+    return Math.max(0, Math.round(price*100)/100).toFixed(2); // 2 знака след запетая #}
   }
 
-  function renderPrice(){  // обновява UI
+  function renderPrice(){  // обновява UI #}
     const el = document.getElementById('pricePreview');
-    if (el) el.textContent = computePrice() + ' лв';  // показва цена
+    if (el) el.textContent = computePrice() + ' лв';  // показва цена #}
   }
 
-  // слушатели за входни полета, влияещи на цената
+  //{# слушатели за входни полета, влияещи на цената #}
   ['weight_kg','distance_km','size','to_office'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     el.addEventListener('input', renderPrice);
     el.addEventListener('change', renderPrice);
   });
 
-  // синхрон с авто-маршрута: след обновяване на маршрут → обнови и цената
-  const old = window.triggerRouteUpdateSoon;  // запази оригинала
-  window.triggerRouteUpdateSoon = function(){  // декориране
-    if(old) old();                             // извикай оригинала
-    setTimeout(renderPrice, 600);              // леко забавяне за да има разстояние
+  //{# синхрон с авто-маршрута: след обновяване на маршрут → обнови и цената #}
+  const old = window.triggerRouteUpdateSoon;   // запази оригинала #}
+  window.triggerRouteUpdateSoon = function(){  // декориране #}
+    if(old) old();                             // извикай оригинала #}
+    setTimeout(renderPrice, 600);              // леко забавяне зreturn render_template("shipments_form.htmlа да има разстояние #}
   };
 
-  window.addEventListener('load', ()=> setTimeout(renderPrice, 300));  // първоначално изчисление
+  window.addEventListener('load', ()=> setTimeout(renderPrice, 300));  // първоначално изчисление #}
 })();
 </script>
 

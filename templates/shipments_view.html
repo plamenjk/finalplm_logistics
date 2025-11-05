@@ -4,13 +4,13 @@
   <h3>Пратка #{{ s.id }}</h3>  {# показва ID на пратката #}
   <div class="btn-group">  {# група за действия #}
     {% if user.role in ['employee','admin'] and s.status != 'delivered' %}  {# бутон за маркиране доставена #}
-      <a class="btn btn-sm btn-success" href="{{ url_for('shipments_mark_delivered', shipment_id=s.id) }}">
+      <a class="btn btn-sm btn-success" href="{{ url_for('shipments.shipments_mark_delivered', shipment_id=s.id) }}">
         <i class="bi bi-check2-circle"></i> Маркирай доставена
       </a>
     {% endif %}
     {% if user.role in ['employee','admin'] %}  {# бутон за изтриване (само служ./админ) #}
       <a class="btn btn-sm btn-outline-danger"
-         href="{{ url_for('shipments_delete', shipment_id=s.id) }}"
+         href="{{ url_for('shipments.shipments_delete', shipment_id=s.id) }}"
          onclick="return confirm('Сигурни ли сте, че искате да изтриете пратката?')">
         <i class="bi bi-trash"></i> Изтрий
       </a>

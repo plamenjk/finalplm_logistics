@@ -3,7 +3,8 @@
 
 <h3>{{ 'Редакция на служител' if emp else 'Нов служител' }}</h3>  {# динамично заглавие според това дали служителят съществува #}
 
-<form method="post" class="card p-3">  {# форма за въвеждане/редакция на данни за служител #}
+<form method="post" class="card p-3"
+      action="{% if emp %}{{ url_for('employees.employees_edit', emp_id=emp.id) }}{% else %}{{ url_for('employees.employees_new') }}{% endif %}">  {# форма за въвеждане/редакция на данни за служител #}
 
   <div class="row g-3">  {# първи ред с основни полета #}
     <div class="col-md-4">  {# колона за име #}

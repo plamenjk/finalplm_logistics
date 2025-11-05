@@ -18,6 +18,12 @@
       {
         "list": "off"
       }
+    ],
+    "axe/name-role-value": [
+      "off",
+      {
+        "link-name": "off"
+      }
     ]
   }
 }

@@ -3,7 +3,8 @@
 
 <h3>{{ 'Редакция на офис' if office else 'Нов офис' }}</h3>  {# динамично заглавие според това дали се редактира или добавя офис #}
 
-<form method="post" class="card p-3">  {# форма за добавяне/редактиране на офис #}
+<form method="post" class="card p-3"
+      action="{% if office %}{{ url_for('offices.offices_edit', office_id=office.id) }}{% else %}{{ url_for('offices.offices_new') }}{% endif %}">  {# форма за добавяне/редактиране на офис #}
   <div class="mb-2">
     <label class="form-label">Име</label>
     <input name="name" class="form-control" value="{{ office.name if office }}" required>  {# поле за име на офиса #}

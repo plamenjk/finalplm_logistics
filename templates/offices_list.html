@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">  {# контейнер за заглавието и бутона #}
   <h3>Офиси</h3>  {# заглавие на страницата #}
   {% if user.role in ['employee','admin'] %}  {# показва бутона само за служители и администратори #}
-  <a class="btn btn-primary glow" href="{{ url_for('offices_new') }}">  {# бутон за добавяне на нов офис #}
+  <a class="btn btn-primary glow" href="{{ url_for('offices.offices_new') }}">  {# бутон за добавяне на нов офис #}
     <i class="bi bi-plus-lg"></i> Нов офис
   </a>
   {% endif %}
@@ -28,10 +28,10 @@
         <td>{{ o.lon or '—' }}</td>  {# географска дължина или тире #}
         <td>  {# колона за бутони за действия #}
           {% if user.role in ['employee','admin'] %}  {# действия достъпни само за служители/админ #}
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('offices_edit', office_id=o.id) }}">  {# бутон за редакция #}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('offices.offices_edit', office_id=o.id) }}">  {# бутон за редакция #}
             <i class="bi bi-pencil-square"></i>
           </a>
-          <a class="btn btn-sm btn-outline-danger" href="{{ url_for('offices_delete', office_id=o.id) }}" onclick="return confirm('Изтриване?')">  {# бутон за изтриване с потвърждение #}
+          <a class="btn btn-sm btn-outline-danger" href="{{ url_for('offices.offices_delete', office_id=o.id) }}" onclick="return confirm('Изтриване?')">  {# бутон за изтриване с потвърждение #}
             <i class="bi bi-trash"></i>
           </a>
           {% endif %}

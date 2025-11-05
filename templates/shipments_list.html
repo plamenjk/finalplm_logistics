@@ -5,7 +5,7 @@
   <h3>Табло</h3>  {# заглавие на страницата #}
 
   {% if user.role in ['employee','admin'] %}  {# проверка на ролята на потребителя #}
-    <a class="btn btn-success glow" href="{{ url_for('shipments_new') }}">  {# бутон за създаване на нова пратка #}
+    <a class="btn btn-success glow" href="{{ url_for('shipments.shipments_new') }}">  {# бутон за създаване на нова пратка #}
       <i class="bi bi-plus-lg"></i> Нова пратка  {# икона и текст на бутона #}
     </a>
   {% endif %}
@@ -14,7 +14,50 @@
 <div class="card">  {# контейнер-карта за визуално оформление #}
   <div class="card-body">  {# тяло на картата #}
     <h5 class="card-title">Последни пратки</h5>  {# подзаглавие за таблицата с пратки #}
-    {% include 'partials/shipments_table.html' with context %}  {# вмъква частичен шаблон за таблица с пратки #}
+<table class="table table-hover align-middle">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Подател</th>
+      <th>Получател</th>
+      <th>Статус</th>
+      <th class="text-end">Цена (лв)</th>
+      <th>Създадена</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in shipments %}
+      <tr>
+        <td>#{{ s.id }}</td>
+        <td>{{ s.sender_name }}</td>
+        <td>{{ s.recipient_name }}</td>
+        <td>
+          {% if s.status == 'delivered' %}
+            <span class="badge bg-success">доставена</span>
+          {% elif s.status == 'in_transit' %}
+            <span class="badge bg-warning text-dark">в транзит</span>
+          {% else %}
+            <span class="badge bg-secondary">регистрирана</span>
+          {% endif %}
+        </td>
+        <td class="text-end">{{ '%.2f'|format(s.price) }}</td>
+        <td>{{ s.registered_at }}</td>
+        <td class="text-nowrap">
+          <a class="btn btn-sm btn-outline-secondary"
+             href="{{ url_for('shipments.shipments_view', shipment_id=s.id) }}">
+            <i class="bi bi-eye"></i>
+          </a>
+        </td>
+      </tr>
+    {% else %}
+      <tr>
+        <td colspan="7" class="text-center text-muted py-4">Няма пратки за показване.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+   {# вмъква частичен шаблон за таблица с пратки #}
   </div>
 </div>
 
